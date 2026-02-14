@@ -1,0 +1,117 @@
+import { ReactNode, useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Zap, LayoutDashboard, Upload, CheckSquare, MessageSquare, Calendar, Bell, Settings, Shield, LogOut, Menu, X } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+
+const navItems = [
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/dashboard/upload", icon: Upload, label: "Upload" },
+  { to: "/dashboard/tasks", icon: CheckSquare, label: "Tasks" },
+  { to: "/dashboard/chat", icon: MessageSquare, label: "AI Chat" },
+  { to: "/dashboard/calendar", icon: Calendar, label: "Calendar" },
+  { to: "/dashboard/reminders", icon: Bell, label: "Reminders" },
+];
+
+const adminItems = [
+  { to: "/dashboard/admin", icon: Shield, label: "Admin" },
+];
+
+interface Props {
+  children: ReactNode;
+  isAdmin?: boolean;
+}
+
+const DashboardLayout = ({ children, isAdmin = false }: Props) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
+  const allItems = isAdmin ? [...navItems, ...adminItems] : navItems;
+
+  return (
+    <div className="min-h-screen bg-background flex">
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <aside className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col z-50 transform transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+        <div className="flex items-center gap-2 px-5 py-5 border-b border-sidebar-border">
+          <div className="w-7 h-7 rounded-md gradient-primary flex items-center justify-center">
+            <Zap className="w-4 h-4 text-primary-foreground" />
+          </div>
+          <span className="font-bold text-foreground">HackTrack</span>
+        </div>
+
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {allItems.map(({ to, icon: Icon, label }) => {
+            const active = location.pathname === to;
+            return (
+              <Link
+                key={to}
+                to={to}
+                onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  active
+                    ? "bg-primary/10 text-primary glow-primary"
+                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="p-3 border-t border-sidebar-border space-y-1">
+          <Link
+            to="/dashboard/settings"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+          >
+            <Settings className="w-4 h-4" />
+            Settings
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors w-full"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div className="flex-1 flex flex-col min-h-screen">
+        <header className="sticky top-0 z-30 h-14 flex items-center px-4 border-b border-border/50 glass-strong lg:hidden">
+          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
+            <Menu className="w-5 h-5" />
+          </Button>
+          <span className="ml-3 font-semibold text-foreground">HackTrack</span>
+        </header>
+        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default DashboardLayout;
