@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/hooks/useAuth";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import RequestAccess from "./pages/RequestAccess";
@@ -24,20 +26,22 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/request-access" element={<RequestAccess />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/dashboard/upload" element={<UploadPage />} />
-          <Route path="/dashboard/tasks" element={<TasksPage />} />
-          <Route path="/dashboard/chat" element={<AIChatPage />} />
-          <Route path="/dashboard/calendar" element={<CalendarPage />} />
-          <Route path="/dashboard/reminders" element={<RemindersPage />} />
-          <Route path="/dashboard/settings" element={<SettingsPage />} />
-          <Route path="/dashboard/admin" element={<AdminPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/request-access" element={<RequestAccess />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/dashboard/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
+            <Route path="/dashboard/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
+            <Route path="/dashboard/chat" element={<ProtectedRoute><AIChatPage /></ProtectedRoute>} />
+            <Route path="/dashboard/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+            <Route path="/dashboard/reminders" element={<ProtectedRoute><RemindersPage /></ProtectedRoute>} />
+            <Route path="/dashboard/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="/dashboard/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
