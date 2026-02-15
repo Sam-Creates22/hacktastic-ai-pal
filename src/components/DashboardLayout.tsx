@@ -1,9 +1,10 @@
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, LayoutDashboard, Upload, CheckSquare, MessageSquare, Calendar, Bell, Settings, Shield, LogOut, Menu, X } from "lucide-react";
+import { Zap, LayoutDashboard, Upload, CheckSquare, MessageSquare, Calendar, Bell, Settings, Shield, LogOut, Menu } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -20,13 +21,13 @@ const adminItems = [
 
 interface Props {
   children: ReactNode;
-  isAdmin?: boolean;
 }
 
-const DashboardLayout = ({ children, isAdmin = false }: Props) => {
+const DashboardLayout = ({ children }: Props) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isAdmin, user } = useAuth();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -57,6 +58,7 @@ const DashboardLayout = ({ children, isAdmin = false }: Props) => {
             <Zap className="w-4 h-4 text-primary-foreground" />
           </div>
           <span className="font-bold text-foreground">HackTrack</span>
+          {isAdmin && <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary ml-auto">Admin</span>}
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">

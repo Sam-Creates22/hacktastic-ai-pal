@@ -4,6 +4,8 @@ import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Brain, Send, User } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Message {
   id: string;
@@ -12,33 +14,84 @@ interface Message {
 }
 
 const AIChatPage = () => {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", role: "assistant", content: "Hey! 👋 I'm your HackTrack AI assistant. I can help you with hackathon preparation, brainstorm ideas, create study plans, and more. What would you like to work on?" },
+    { id: "welcome", role: "assistant", content: "Hey! 👋 I'm your HackTrack AI assistant. I can help you with hackathon preparation, brainstorm ideas, create study plans, and more. What would you like to work on?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Load chat history
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("chat_messages")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setMessages(data.map(m => ({
+            id: m.id,
+            role: m.role as "user" | "assistant",
+            content: m.content,
+          })));
+        }
+      });
+  }, [user]);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  const send = () => {
-    if (!input.trim() || loading) return;
-    const userMsg: Message = { id: Date.now().toString(), role: "user", content: input.trim() };
+  const send = async () => {
+    if (!input.trim() || loading || !user) return;
+    const userContent = input.trim();
+    const userMsg: Message = { id: Date.now().toString(), role: "user", content: userContent };
     setMessages(prev => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
-    // Simulated response for now
-    setTimeout(() => {
+    // Save user message
+    await supabase.from("chat_messages").insert({
+      user_id: user.id,
+      role: "user",
+      content: userContent,
+    });
+
+    try {
+      // Build conversation history for AI (last 20 messages)
+      const recentMessages = [...messages.slice(-19), userMsg].map(m => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      const { data, error } = await supabase.functions.invoke("ai-chat", {
+        body: { messages: recentMessages },
+      });
+
+      if (error) throw error;
+
+      const reply = data.reply || "Sorry, something went wrong.";
+      const aiMsg: Message = { id: (Date.now() + 1).toString(), role: "assistant", content: reply };
+      setMessages(prev => [...prev, aiMsg]);
+
+      // Save AI response
+      await supabase.from("chat_messages").insert({
+        user_id: user.id,
+        role: "assistant",
+        content: reply,
+      });
+    } catch (err: any) {
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I'm working on analyzing your request. AI processing will be connected soon — for now this is a preview of the chat interface! 🚀",
+        content: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
       }]);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
