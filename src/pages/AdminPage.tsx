@@ -50,20 +50,22 @@ const AdminPage = () => {
       if (action === "approved") {
         const request = requests.find(r => r.id === id);
         if (request) {
-          // Create user account via edge function
-          const { error: fnError } = await supabase.functions.invoke("approve-user", {
+          const { data: fnData, error: fnError } = await supabase.functions.invoke("approve-user", {
             body: { email: request.email, name: request.name },
           });
           if (fnError) throw fnError;
+          toast({
+            title: "User Approved ✓",
+            description: `Account created. Temp password: ${fnData?.tempPassword ?? "check logs"}`,
+          });
         }
+      } else {
+        toast({
+          title: "Request Rejected",
+          description: "The access request has been rejected.",
+        });
       }
 
-      toast({
-        title: action === "approved" ? "User Approved ✓" : "Request Rejected",
-        description: action === "approved"
-          ? "Account created. User can now sign in."
-          : "The access request has been rejected.",
-      });
       fetchRequests();
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });

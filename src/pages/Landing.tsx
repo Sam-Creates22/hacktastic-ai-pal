@@ -1,18 +1,30 @@
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Zap, Brain, Calendar, CheckCircle, Shield, Upload } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const features = [
-  { icon: Upload, title: "Smart Upload", desc: "Upload hackathon brochures and let AI extract all the details" },
-  { icon: Brain, title: "AI Assistant", desc: "Get personalized prep plans, ideas, and coaching" },
-  { icon: Calendar, title: "Calendar Sync", desc: "Check availability and never miss a deadline" },
-  { icon: CheckCircle, title: "Task Manager", desc: "Track preparation tasks with priorities and deadlines" },
-  { icon: Shield, title: "Private & Secure", desc: "Invite-only community with role-based access" },
-  { icon: Zap, title: "Smart Reminders", desc: "Configurable notifications so you're always prepared" },
+  { icon: Upload, title: "Smart Upload", desc: "Upload hackathon brochures and let AI extract all the details", route: "/dashboard/upload" },
+  { icon: Brain, title: "AI Assistant", desc: "Get personalized prep plans, ideas, and coaching", route: "/dashboard/chat" },
+  { icon: Calendar, title: "Calendar Sync", desc: "Check availability and never miss a deadline", route: "/dashboard/calendar" },
+  { icon: CheckCircle, title: "Task Manager", desc: "Track preparation tasks with priorities and deadlines", route: "/dashboard/tasks" },
+  { icon: Shield, title: "Private & Secure", desc: "Invite-only community with role-based access", route: "/dashboard" },
+  { icon: Zap, title: "Smart Reminders", desc: "Configurable notifications so you're always prepared", route: "/dashboard/reminders" },
 ];
 
 const Landing = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleFeatureClick = (route: string) => {
+    if (user) {
+      navigate(route);
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background overflow-hidden relative">
       {/* Grid background */}
@@ -101,7 +113,8 @@ const Landing = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 + i * 0.1 }}
-              className="glass rounded-xl p-6 hover:border-primary/30 transition-all duration-300 group"
+              onClick={() => handleFeatureClick(f.route)}
+              className="glass rounded-xl p-6 hover:border-primary/30 transition-all duration-300 group cursor-pointer"
             >
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
                 <f.icon className="w-5 h-5 text-primary" />

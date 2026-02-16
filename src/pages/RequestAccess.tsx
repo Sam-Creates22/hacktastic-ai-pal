@@ -44,7 +44,7 @@ const RequestAccess = () => {
             <CheckCircle className="w-8 h-8 text-primary" />
           </div>
           <h2 className="text-2xl font-bold text-foreground mb-3">Request Submitted!</h2>
-          <p className="text-muted-foreground mb-6">We'll review your request and get back to you soon. You'll receive an email once approved.</p>
+          <p className="text-muted-foreground mb-6">Your request has been sent to the admin. If approved, login credentials will be shared.</p>
           <Link to="/">
             <Button variant="outline" className="border-border/50">Back to Home</Button>
           </Link>
