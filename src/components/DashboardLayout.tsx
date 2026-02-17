@@ -1,14 +1,17 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Zap, LayoutDashboard, Upload, CheckSquare, MessageSquare, Calendar, Bell, Settings, Shield, LogOut, Menu } from "lucide-react";
+import { Zap, LayoutDashboard, Upload, CheckSquare, MessageSquare, Calendar, Bell, Settings, Shield, LogOut, Menu, CalendarDays } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/hooks/useNotifications";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/dashboard/upload", icon: Upload, label: "Upload" },
+  { to: "/dashboard/events", icon: CalendarDays, label: "Events" },
   { to: "/dashboard/tasks", icon: CheckSquare, label: "Tasks" },
   { to: "/dashboard/chat", icon: MessageSquare, label: "AI Chat" },
   { to: "/dashboard/calendar", icon: Calendar, label: "Calendar" },
@@ -28,6 +31,7 @@ const DashboardLayout = ({ children }: Props) => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isAdmin, user } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllRead } = useNotifications();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -83,6 +87,45 @@ const DashboardLayout = ({ children }: Props) => {
         </nav>
 
         <div className="p-3 border-t border-sidebar-border space-y-1">
+          {/* Notifications */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent transition-colors w-full relative">
+                <Bell className="w-4 h-4" />
+                Notifications
+                {unreadCount > 0 && (
+                  <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold min-w-[20px] text-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="top" align="start" className="w-80 p-0 bg-card border-border">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                <span className="text-sm font-semibold text-foreground">Notifications</span>
+                {unreadCount > 0 && (
+                  <button onClick={markAllRead} className="text-xs text-primary hover:underline">Mark all read</button>
+                )}
+              </div>
+              <div className="max-h-64 overflow-y-auto">
+                {notifications.length === 0 ? (
+                  <p className="text-sm text-muted-foreground p-4 text-center">No notifications</p>
+                ) : (
+                  notifications.slice(0, 20).map((n) => (
+                    <button
+                      key={n.id}
+                      onClick={() => markAsRead(n.id)}
+                      className={`w-full text-left px-4 py-3 border-b border-border/30 hover:bg-secondary/50 transition-colors ${!n.read ? "bg-primary/5" : ""}`}
+                    >
+                      <p className={`text-sm ${!n.read ? "text-foreground font-medium" : "text-muted-foreground"}`}>{n.message}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{new Date(n.created_at).toLocaleDateString()}</p>
+                    </button>
+                  ))
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+
           <Link
             to="/dashboard/settings"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
@@ -107,6 +150,11 @@ const DashboardLayout = ({ children }: Props) => {
             <Menu className="w-5 h-5" />
           </Button>
           <span className="ml-3 font-semibold text-foreground">HackTrack</span>
+          {unreadCount > 0 && (
+            <span className="ml-auto text-xs px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold">
+              {unreadCount}
+            </span>
+          )}
         </header>
         <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
           {children}

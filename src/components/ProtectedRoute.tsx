@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
 interface Props {
@@ -7,7 +7,8 @@ interface Props {
 }
 
 const ProtectedRoute = ({ children, adminOnly = false }: Props) => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, isAdmin, profileCompleted, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -21,6 +22,12 @@ const ProtectedRoute = ({ children, adminOnly = false }: Props) => {
   }
 
   if (!user) return <Navigate to="/login" replace />;
+  
+  // Allow access to complete-profile page without profile check
+  if (!profileCompleted && location.pathname !== "/dashboard/complete-profile") {
+    return <Navigate to="/dashboard/complete-profile" replace />;
+  }
+
   if (adminOnly && !isAdmin) return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;

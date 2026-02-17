@@ -65,28 +65,97 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          approved: boolean
+          created_at: string
+          created_by: string
+          description: string | null
+          event_date: string
+          id: string
+          title: string
+          visibility: string
+        }
+        Insert: {
+          approved?: boolean
+          created_at?: string
+          created_by: string
+          description?: string | null
+          event_date: string
+          id?: string
+          title: string
+          visibility?: string
+        }
+        Update: {
+          approved?: boolean
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          event_date?: string
+          id?: string
+          title?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           created_at: string
+          date_of_birth: string | null
           full_name: string | null
           id: string
+          mobile: string | null
+          profile_completed: boolean
+          university_roll_number: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           full_name?: string | null
           id?: string
+          mobile?: string | null
+          profile_completed?: boolean
+          university_roll_number?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           full_name?: string | null
           id?: string
+          mobile?: string | null
+          profile_completed?: boolean
+          university_roll_number?: string | null
           updated_at?: string
           user_id?: string
         }
