@@ -17,6 +17,8 @@ import RemindersPage from "./pages/RemindersPage";
 import SettingsPage from "./pages/SettingsPage";
 import AdminPage from "./pages/AdminPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import CompleteProfilePage from "./pages/CompleteProfilePage";
+import EventsPage from "./pages/EventsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,8 +35,10 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/request-access" element={<RequestAccess />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/dashboard/complete-profile" element={<ProtectedRoute><CompleteProfilePage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/dashboard/upload" element={<ProtectedRoute><UploadPage /></ProtectedRoute>} />
+            <Route path="/dashboard/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
             <Route path="/dashboard/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
             <Route path="/dashboard/chat" element={<ProtectedRoute><AIChatPage /></ProtectedRoute>} />
             <Route path="/dashboard/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
